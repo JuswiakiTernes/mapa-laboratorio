@@ -43,14 +43,14 @@ const firebaseConfig = {
     const { useState, useEffect } = React;
 
     const INITIAL_DATA = {
-      // Esquerda: Linhas 1 a 5[cite: 4, 5, 6]
+      // Esquerda: Linhas 1 a 5[cite: 4, 5, 6, 7]
       "L1-E": { id: "L1-E", label: "LINHA 1", project: "SE 230kV Blumenau", stage: "TAF", status: "NO PRAZO", panels: ["QCP-01", "QCP-02"] },
       "L2-E": { id: "L2-E", label: "LINHA 2", project: "SE Itajaí II", stage: "PRE-TAF", status: "ATRASADO", panels: ["PN-87T"] },
       "L3-E": { id: "L3-E", label: "LINHA 3", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
       "L4-E": { id: "L4-E", label: "LINHA 4", project: "PCH Rio Bonito", stage: "PRE-TAF", status: "NO PRAZO", panels: ["QTA-01"] },
       "L5-E": { id: "L5-E", label: "LINHA 5", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
 
-      // Direita: Linhas 1 a 8[cite: 4, 5, 6]
+      // Direita: Linhas 1 a 8[cite: 4, 5, 6, 7]
       "RD-1": { id: "RD-1", label: "LINHA 1", project: "SE Gaspar 138kV", stage: "PRE-TAF", status: "NO PRAZO", panels: ["PN-01"] },
       "RD-2": { id: "RD-2", label: "LINHA 2", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
       "RD-3": { id: "RD-3", label: "LINHA 3", project: "SE Joinville Norte", stage: "TAF", status: "ATRASADO", panels: ["QCP-87L1"] },
@@ -60,7 +60,7 @@ const firebaseConfig = {
       "RD-7": { id: "RD-7", label: "LINHA 7", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
       "RD-8": { id: "RD-8", label: "LINHA 8", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
 
-      // Canto Inferior Esquerdo: 6 Plataformas de Rotina[cite: 4, 5, 6]
+      // Canto Inferior Esquerdo: 6 Plataformas de Rotina otimizadas[cite: 4, 5, 6, 7]
       "ROT-1": { id: "ROT-1", label: "PLATAFORMA 1", project: "Lote CCM Industrial", stage: "ROTINA", status: "NO PRAZO", panels: ["CCM-01A"] },
       "ROT-2": { id: "ROT-2", label: "PLATAFORMA 2", project: "SE Tubarão", stage: "ROTINA", status: "NO PRAZO", panels: ["QDCA-01"] },
       "ROT-3": { id: "ROT-3", label: "PLATAFORMA 3", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
@@ -89,7 +89,7 @@ const firebaseConfig = {
           if (window.firebaseDB) {
             clearInterval(checkFirebase);
             const { db, ref, onValue } = window.firebaseDB;
-            const slotsRef = ref(db, 'laboratorio/slots_v8');
+            const slotsRef = ref(db, 'laboratorio/slots_v9');
 
             onValue(slotsRef, (snapshot) => {
               const data = snapshot.val();
@@ -110,7 +110,7 @@ const firebaseConfig = {
         setSlots(newSlots);
         if (window.firebaseDB) {
           const { db, ref, set } = window.firebaseDB;
-          set(ref(db, 'laboratorio/slots_v8'), newSlots);
+          set(ref(db, 'laboratorio/slots_v9'), newSlots);
         }
       };
 
@@ -189,7 +189,7 @@ const firebaseConfig = {
         const isDelayed = data.status === "ATRASADO";
 
         return (
-          <div className="relative flex items-center h-full w-full py-0.5">
+          <div className="relative flex items-center h-full w-full py-0.5 px-1">
             <div className="absolute left-0 right-0 h-1.5 bg-slate-700 rounded-full z-0" />
             {isOccupied ? (
               <div
@@ -341,7 +341,7 @@ const firebaseConfig = {
           <div className="flex-1 relative pl-16 pb-1 min-h-0">
             <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] flex flex-col justify-between p-3.5">
               
-              {/* 5 PORTAS NA PAREDE ESQUERDA[cite: 4, 5, 6] */}
+              {/* 5 PORTAS NA PAREDE ESQUERDA[cite: 4, 5, 6, 7] */}
               {[
                 { top: "2%", h: "h-8" },
                 { top: "15%", h: "h-14" },
@@ -360,28 +360,31 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* LAYOUT PRINCIPAL ALINHADO COM GRADE UNIFORME[cite: 4, 5, 6] */}
-              <div className="grid grid-cols-12 gap-3 h-full min-h-0 items-center">
+              {/* LAYOUT PRINCIPAL: ALINHAMENTO MILIMÉTRICO DAS LINHAS 1 A 5 E APROXIMAÇÃO DO CORREDOR[cite: 4, 5, 6, 7] */}
+              <div className="grid grid-cols-12 gap-1.5 h-full min-h-0 items-center">
                 
-                {/* LADO ESQUERDO: 5 Linhas + Área de Rotina com 6 Plataformas[cite: 4, 5, 6] */}
-                <div className="col-span-5 h-full flex flex-col justify-between pr-1">
-                  <div className="grid grid-rows-5 h-[48%] gap-1 items-center">
+                {/* LADO ESQUERDO: 5 Linhas exatas sincronizadas com o lado direito + Rotina Otimizada[cite: 4, 5, 6, 7] */}
+                <div className="col-span-5 h-full flex flex-col justify-between pr-0.5">
+                  <div className="grid grid-rows-8 h-[62%] gap-0.5 items-center">
                     <PlatformLine id="L1-E" />
                     <PlatformLine id="L2-E" />
                     <PlatformLine id="L3-E" />
                     <PlatformLine id="L4-E" />
                     <PlatformLine id="L5-E" />
+                    <div className="invisible" />
+                    <div className="invisible" />
+                    <div className="invisible" />
                   </div>
 
-                  {/* Teste de Rotina com 6 Plataformas[cite: 4, 5, 6] */}
-                  <div className="h-[48%] border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative">
+                  {/* Teste de Rotina com altura otimizada e 6 Plataformas[cite: 4, 5, 6, 7] */}
+                  <div className="h-[35%] border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative">
                     <div className="flex items-center justify-between shrink-0">
                       <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
                         Teste de Rotina
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-3 grid-rows-2 gap-1.5 my-auto">
+                    <div className="grid grid-cols-3 grid-rows-2 gap-1 my-auto">
                       {["ROT-1", "ROT-2", "ROT-3", "ROT-4", "ROT-5", "ROT-6"].map((rotId) => {
                         const r = slots[rotId] || INITIAL_DATA[rotId];
                         const occ = Boolean(r.project);
@@ -389,7 +392,7 @@ const firebaseConfig = {
                           <div
                             key={rotId}
                             onClick={() => openModal(rotId)}
-                            className={`p-1 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[48px] ${
+                            className={`p-1 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[42px] ${
                               occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
                             }`}
                           >
@@ -418,18 +421,18 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                {/* CORREDOR CENTRAL ESTREITO[cite: 4, 5, 6] */}
+                {/* CORREDOR CENTRAL MAIS ESTREITO E PRÓXIMO[cite: 4, 5, 6, 7] */}
                 <div className="col-span-2 h-[85%] flex items-center justify-center">
-                  <div className="w-14 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
+                  <div className="w-12 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
                     <span className="text-[11px] font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
                       Corredor
                     </span>
                   </div>
                 </div>
 
-                {/* LADO DIREITO: 8 Linhas com espaçamento e alinhamento milimétrico[cite: 4, 5, 6] */}
-                <div className="col-span-5 h-full flex flex-col justify-between pl-1 py-1">
-                  <div className="grid grid-rows-8 h-full gap-1 items-center">
+                {/* LADO DIREITO: 8 Linhas alinhadas[cite: 4, 5, 6, 7] */}
+                <div className="col-span-5 h-full flex flex-col justify-between pl-0.5 py-1">
+                  <div className="grid grid-rows-8 h-full gap-0.5 items-center">
                     <PlatformLine id="RD-1" />
                     <PlatformLine id="RD-2" />
                     <PlatformLine id="RD-3" />
