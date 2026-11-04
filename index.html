@@ -60,7 +60,7 @@ const firebaseConfig = {
       "RD-7": { id: "RD-7", label: "LINHA 7", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
       "RD-8": { id: "RD-8", label: "LINHA 8", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
 
-      // Canto Inferior Esquerdo: 6 Plataformas de Rotina otimizadas[cite: 4, 5, 6, 7]
+      // Canto Inferior Esquerdo: 6 Plataformas de Rotina[cite: 4, 5, 6, 7]
       "ROT-1": { id: "ROT-1", label: "PLATAFORMA 1", project: "Lote CCM Industrial", stage: "ROTINA", status: "NO PRAZO", panels: ["CCM-01A"] },
       "ROT-2": { id: "ROT-2", label: "PLATAFORMA 2", project: "SE Tubarão", stage: "ROTINA", status: "NO PRAZO", panels: ["QDCA-01"] },
       "ROT-3": { id: "ROT-3", label: "PLATAFORMA 3", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
@@ -89,7 +89,7 @@ const firebaseConfig = {
           if (window.firebaseDB) {
             clearInterval(checkFirebase);
             const { db, ref, onValue } = window.firebaseDB;
-            const slotsRef = ref(db, 'laboratorio/slots_v9');
+            const slotsRef = ref(db, 'laboratorio/slots_v10');
 
             onValue(slotsRef, (snapshot) => {
               const data = snapshot.val();
@@ -110,7 +110,7 @@ const firebaseConfig = {
         setSlots(newSlots);
         if (window.firebaseDB) {
           const { db, ref, set } = window.firebaseDB;
-          set(ref(db, 'laboratorio/slots_v9'), newSlots);
+          set(ref(db, 'laboratorio/slots_v10'), newSlots);
         }
       };
 
@@ -360,12 +360,12 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* LAYOUT PRINCIPAL: ALINHAMENTO MILIMÉTRICO DAS LINHAS 1 A 5 E APROXIMAÇÃO DO CORREDOR[cite: 4, 5, 6, 7] */}
+              {/* LAYOUT PRINCIPAL: AMBOS OS LADOS USAM EXATAMENTE A MESMA GRADE DE 8 LINHAS[cite: 4, 5, 6, 7] */}
               <div className="grid grid-cols-12 gap-1.5 h-full min-h-0 items-center">
                 
-                {/* LADO ESQUERDO: 5 Linhas exatas sincronizadas com o lado direito + Rotina Otimizada[cite: 4, 5, 6, 7] */}
+                {/* LADO ESQUERDO: Grade de 8 linhas (Linhas 1 a 5 preenchem os primeiros slots, 6 a 7 vazios para espaçamento exato) + Rotina[cite: 4, 5, 6, 7] */}
                 <div className="col-span-5 h-full flex flex-col justify-between pr-0.5">
-                  <div className="grid grid-rows-8 h-[62%] gap-0.5 items-center">
+                  <div className="grid grid-rows-8 h-[65%] gap-0.5 items-center">
                     <PlatformLine id="L1-E" />
                     <PlatformLine id="L2-E" />
                     <PlatformLine id="L3-E" />
@@ -376,8 +376,8 @@ const firebaseConfig = {
                     <div className="invisible" />
                   </div>
 
-                  {/* Teste de Rotina com altura otimizada e 6 Plataformas[cite: 4, 5, 6, 7] */}
-                  <div className="h-[35%] border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative">
+                  {/* Teste de Rotina[cite: 4, 5, 6, 7] */}
+                  <div className="h-[32%] border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative">
                     <div className="flex items-center justify-between shrink-0">
                       <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
                         Teste de Rotina
@@ -392,7 +392,7 @@ const firebaseConfig = {
                           <div
                             key={rotId}
                             onClick={() => openModal(rotId)}
-                            className={`p-1 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[42px] ${
+                            className={`p-1 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[38px] ${
                               occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
                             }`}
                           >
@@ -421,7 +421,7 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                {/* CORREDOR CENTRAL MAIS ESTREITO E PRÓXIMO[cite: 4, 5, 6, 7] */}
+                {/* CORREDOR CENTRAL[cite: 4, 5, 6, 7] */}
                 <div className="col-span-2 h-[85%] flex items-center justify-center">
                   <div className="w-12 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
                     <span className="text-[11px] font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
@@ -430,7 +430,7 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                {/* LADO DIREITO: 8 Linhas alinhadas[cite: 4, 5, 6, 7] */}
+                {/* LADO DIREITO: Grade de 8 linhas exatas[cite: 4, 5, 6, 7] */}
                 <div className="col-span-5 h-full flex flex-col justify-between pl-0.5 py-1">
                   <div className="grid grid-rows-8 h-full gap-0.5 items-center">
                     <PlatformLine id="RD-1" />
