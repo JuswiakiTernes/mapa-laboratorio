@@ -86,7 +86,7 @@ const firebaseConfig = {
           if (window.firebaseDB) {
             clearInterval(checkFirebase);
             const { db, ref, onValue } = window.firebaseDB;
-            const slotsRef = ref(db, 'laboratorio/slots_v6');
+            const slotsRef = ref(db, 'laboratorio/slots_v7');
 
             onValue(slotsRef, (snapshot) => {
               const data = snapshot.val();
@@ -107,7 +107,7 @@ const firebaseConfig = {
         setSlots(newSlots);
         if (window.firebaseDB) {
           const { db, ref, set } = window.firebaseDB;
-          set(ref(db, 'laboratorio/slots_v6'), newSlots);
+          set(ref(db, 'laboratorio/slots_v7'), newSlots);
         }
       };
 
@@ -357,12 +357,12 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* LAYOUT PRINCIPAL[cite: 4, 5] */}
+              {/* LAYOUT PRINCIPAL UNIFORME COM ALINHAMENTO PERFEITO[cite: 4, 5] */}
               <div className="grid grid-cols-12 gap-3 h-full min-h-0 items-center">
                 
-                {/* LADO ESQUERDO: Linhas 1 a 5 (Altura controlada) + Rotina embaixo[cite: 4, 5] */}
+                {/* LADO ESQUERDO: Linhas 1 a 5 (distribuídas exatamente em 5 slots idênticos) + Rotina embaixo[cite: 4, 5] */}
                 <div className="col-span-5 h-full flex flex-col justify-between pr-1">
-                  <div className="flex flex-col justify-between h-[52%]">
+                  <div className="grid grid-rows-5 h-[52%] gap-1 items-center">
                     <PlatformLine id="L1-E" />
                     <PlatformLine id="L2-E" />
                     <PlatformLine id="L3-E" />
@@ -415,7 +415,7 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                {/* CORREDOR CENTRAL MAIS ESTREITO[cite: 4, 5] */}
+                {/* CORREDOR CENTRAL ESTREITO[cite: 4, 5] */}
                 <div className="col-span-2 h-[85%] flex items-center justify-center">
                   <div className="w-14 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
                     <span className="text-[11px] font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
@@ -424,16 +424,18 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                {/* LADO DIREITO: Linhas 1 a 8[cite: 4, 5] */}
+                {/* LADO DIREITO: Linhas 1 a 8 (distribuídas em 8 slots perfeitamente alinhados)[cite: 4, 5] */}
                 <div className="col-span-5 h-full flex flex-col justify-between pl-1 py-1">
-                  <PlatformLine id="RD-1" />
-                  <PlatformLine id="RD-2" />
-                  <PlatformLine id="RD-3" />
-                  <PlatformLine id="RD-4" />
-                  <PlatformLine id="RD-5" />
-                  <PlatformLine id="RD-6" />
-                  <PlatformLine id="RD-7" />
-                  <PlatformLine id="RD-8" />
+                  <div className="grid grid-rows-8 h-full gap-1 items-center">
+                    <PlatformLine id="RD-1" />
+                    <PlatformLine id="RD-2" />
+                    <PlatformLine id="RD-3" />
+                    <PlatformLine id="RD-4" />
+                    <PlatformLine id="RD-5" />
+                    <PlatformLine id="RD-6" />
+                    <PlatformLine id="RD-7" />
+                    <PlatformLine id="RD-8" />
+                  </div>
                 </div>
 
               </div>
