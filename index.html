@@ -43,25 +43,37 @@ const firebaseConfig = {
     const { useState, useEffect } = React;
 
     const INITIAL_DATA = {
-      "L1-E": { id: "L1-E", label: "LINHA 1", project: "SE 230kV Blumenau", stage: "TAF", panels: ["QCP-01", "QCP-02", "QCP-03"] },
-      "L2-E": { id: "L2-E", label: "LINHA 2", project: "SE Itajaí II", stage: "PRE-TAF", panels: ["PN-87T", "PN-50/51"] },
-      "L3-E": { id: "L3-E", label: "LINHA 3", project: "", stage: "PRE-TAF", panels: [] },
-      "L4-E": { id: "L4-E", label: "LINHA 4 (ESQ)", project: "SE Joinville Norte", stage: "TAF", panels: ["QCP-87L1", "QCP-87L2", "QCP-21L1"] },
-      "L5-E": { id: "L5-E", label: "LINHA 5 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L6-E": { id: "L6-E", label: "LINHA 6 (ESQ)", project: "PCH Rio Bonito", stage: "PRE-TAF", panels: ["QTA-01", "QCSA-01"] },
-      "L7-E": { id: "L7-E", label: "LINHA 7 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L8-E": { id: "L8-E", label: "LINHA 8 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L4-D": { id: "L4-D", label: "LINHA 4 (DIR)", project: "SE Gaspar 138kV", stage: "PRE-TAF", panels: ["PN-01", "PN-02"] },
+      // Contagem de baixo para cima (L1 a L8)
+      "L1-E": { id: "L1-E", label: "LINHA 1 (ESQ)", project: "SE Gaspar 138kV", stage: "PRE-TAF", panels: ["PN-01", "PN-02"] },
+      "L2-E": { id: "L2-E", label: "LINHA 2 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
+      "L3-E": { id: "L3-E", label: "LINHA 3 (ESQ)", project: "PCH Rio Bonito", stage: "PRE-TAF", panels: ["QTA-01", "QCSA-01"] },
+      "L4-E": { id: "L4-E", label: "LINHA 4 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
+      "L5-E": { id: "L5-E", label: "LINHA 5 (ESQ)", project: "SE Joinville Norte", stage: "TAF", panels: ["QCP-87L1", "QCP-87L2"] },
+      "L6-E": { id: "L6-E", label: "LINHA 6 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
+      "L7-E": { id: "L7-E", label: "LINHA 7 (ESQ)", project: "SE Itajaí II", stage: "PRE-TAF", panels: ["PN-87T"] },
+      "L8-E": { id: "L8-E", label: "LINHA 8 (ESQ)", project: "SE 230kV Blumenau", stage: "TAF", panels: ["QCP-01", "QCP-02"] },
+
+      "L1-D": { id: "L1-D", label: "LINHA 1 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
+      "L2-D": { id: "L2-D", label: "LINHA 2 (DIR)", project: "UFV Sol do Sertão", stage: "TAF", panels: ["SKID-01"] },
+      "L3-D": { id: "L3-D", label: "LINHA 3 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
+      "L4-D": { id: "L4-D", label: "LINHA 4 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
       "L5-D": { id: "L5-D", label: "LINHA 5 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L6-D": { id: "L6-D", label: "LINHA 6 (DIR)", project: "UFV Sol do Sertão", stage: "TAF", panels: ["SKID-01", "SKID-02"] },
+      "L6-D": { id: "L6-D", label: "LINHA 6 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
       "L7-D": { id: "L7-D", label: "LINHA 7 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
       "L8-D": { id: "L8-D", label: "LINHA 8 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
+
+      // Área de Teste de Rotina (Canto Inferior Esquerdo)
       "ROT-1": { id: "ROT-1", label: "BANCADA ROTINA 1", project: "Lote CCM Industrial", stage: "ROTINA", panels: ["CCM-01A", "CCM-01B"] },
-      "ROT-2": { id: "ROT-2", label: "BANCADA ROTINA 2", project: "SE Tubarão", stage: "ROTINA", panels: ["QDCA-01", "QDCC-01"] },
+      "ROT-2": { id: "ROT-2", label: "BANCADA ROTINA 2", project: "SE Tubarão", stage: "ROTINA", panels: ["QDCA-01"] },
       "ROT-3": { id: "ROT-3", label: "BANCADA ROTINA 3", project: "", stage: "ROTINA", panels: [] },
     };
 
     function App() {
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [loginUser, setLoginUser] = useState("");
+      const [loginPass, setLoginPass] = useState("");
+      const [loginError, setLoginError] = useState(false);
+
       const [slots, setSlots] = useState(INITIAL_DATA);
       const [clock, setClock] = useState(new Date());
       const [editingId, setEditingId] = useState(null);
@@ -70,7 +82,6 @@ const firebaseConfig = {
       const [formPanels, setFormPanels] = useState("");
       const [isConnected, setIsConnected] = useState(false);
 
-      // Sincronização em tempo real com o Firebase
       useEffect(() => {
         const checkFirebase = setInterval(() => {
           if (window.firebaseDB) {
@@ -84,7 +95,6 @@ const firebaseConfig = {
                 setSlots(data);
                 setIsConnected(true);
               } else {
-                // Se o banco estiver vazio, grava os dados iniciais
                 window.firebaseDB.set(slotsRef, INITIAL_DATA);
               }
             });
@@ -106,6 +116,16 @@ const firebaseConfig = {
         const timer = setInterval(() => setClock(new Date()), 1000);
         return () => clearInterval(timer);
       }, []);
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (loginUser === "Comissionamento" && loginPass === "Weg@1234") {
+          setIsAuthenticated(true);
+          setLoginError(false);
+        } else {
+          setLoginError(true);
+        }
+      };
 
       const openModal = (id) => {
         const item = slots[id] || INITIAL_DATA[id];
@@ -164,24 +184,24 @@ const firebaseConfig = {
         const isTAF = data.stage === "TAF";
 
         return (
-          <div className="relative flex items-center h-full w-full py-1.5">
+          <div className="relative flex items-center h-full w-full py-1">
             <div className="absolute left-0 right-0 h-2 bg-slate-700 rounded-full z-0" />
             {isOccupied ? (
               <div
                 onClick={() => openModal(id)}
-                className={`relative z-10 w-full flex items-center justify-between px-3 py-2 rounded-lg border-2 cursor-pointer transition-all shadow-lg ${
+                className={`relative z-10 w-full flex items-center justify-between px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-all shadow-lg ${
                   isTAF ? "bg-emerald-950/95 border-emerald-500 hover:bg-emerald-900" : "bg-amber-950/95 border-amber-500 hover:bg-amber-900"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <span className="text-xs font-extrabold px-2 py-0.5 rounded bg-black/50 text-slate-300 shrink-0">
+                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded bg-black/50 text-slate-300 shrink-0">
                     {data.label}
                   </span>
                   <div className="truncate">
-                    <div className="text-sm font-black text-white truncate">{data.project}</div>
+                    <div className="text-xs font-black text-white truncate">{data.project}</div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {data.panels.map((p, idx) => (
-                        <span key={idx} className="text-[11px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15">
+                        <span key={idx} className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15">
                           {p}
                         </span>
                       ))}
@@ -190,7 +210,7 @@ const firebaseConfig = {
                 </div>
                 <button
                   onClick={(e) => toggleStage(e, id)}
-                  className={`shrink-0 px-2.5 py-1 rounded text-xs font-black tracking-wider uppercase border transition ${
+                  className={`shrink-0 px-2.5 py-1 rounded text-[11px] font-black tracking-wider uppercase border transition ${
                     isTAF ? "bg-emerald-500 text-slate-950 border-emerald-300" : "bg-amber-400 text-slate-950 border-amber-200"
                   }`}
                 >
@@ -200,7 +220,7 @@ const firebaseConfig = {
             ) : (
               <button
                 onClick={() => openModal(id)}
-                className="relative z-10 mx-auto px-4 py-1 rounded-full bg-slate-900/95 border border-dashed border-slate-600 hover:border-sky-400 text-slate-400 hover:text-sky-300 text-xs font-bold flex items-center gap-2 transition"
+                className="relative z-10 mx-auto px-3 py-0.5 rounded-full bg-slate-900/95 border border-dashed border-slate-600 hover:border-sky-400 text-slate-400 hover:text-sky-300 text-[11px] font-bold flex items-center gap-2 transition"
               >
                 <span>{data.label}: DISPONÍVEL</span>
                 <span className="text-sky-400 font-black">+ Adicionar</span>
@@ -209,6 +229,61 @@ const firebaseConfig = {
           </div>
         );
       };
+
+      if (!isAuthenticated) {
+        return (
+          <div className="h-screen w-screen flex items-center justify-center bg-[#090d16] p-4">
+            <form onSubmit={handleLogin} className="bg-slate-900 border-2 border-slate-700 rounded-2xl w-full max-w-sm p-8 shadow-2xl space-y-5">
+              <div className="text-center space-y-1">
+                <div className="w-12 h-12 bg-sky-500 rounded-xl mx-auto mb-3 flex items-center justify-center font-black text-slate-950 text-xl">
+                  WEG
+                </div>
+                <h1 className="text-xl font-black text-white uppercase tracking-wider">Laboratório de Ensaios</h1>
+                <p className="text-xs text-slate-400">Insira as credenciais de acesso</p>
+              </div>
+
+              {loginError && (
+                <div className="p-3 rounded-lg bg-rose-950/80 border border-rose-600 text-rose-300 text-xs font-bold text-center">
+                  Usuário ou senha inválidos.
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Usuário</label>
+                  <input
+                    type="text"
+                    value={loginUser}
+                    onChange={(e) => setLoginUser(e.target.value)}
+                    placeholder="Comissionamento"
+                    className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-sm focus:border-sky-400 outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Senha</label>
+                  <input
+                    type="password"
+                    value={loginPass}
+                    onChange={(e) => setLoginPass(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-sm focus:border-sky-400 outline-none"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-black uppercase tracking-wider transition shadow-lg"
+                >
+                  Entrar no Sistema
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+      }
 
       return (
         <div className="h-screen w-screen flex flex-col p-4 bg-[#090d16] select-none">
@@ -250,9 +325,10 @@ const firebaseConfig = {
             </div>
           </header>
 
-          <div className="flex-1 relative pr-20 pb-2 min-h-0">
+          <div className="flex-1 relative pl-20 pb-2 min-h-0">
             <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] flex flex-col justify-between p-5">
               
+              {/* 5 PORTAS NA PAREDE ESQUERDA (ESPELHADAS) */}
               {[
                 { top: "8%", h: "h-16" },
                 { top: "36%", h: "h-16" },
@@ -263,32 +339,42 @@ const firebaseConfig = {
                 <div
                   key={i}
                   style={{ top: door.top }}
-                  className={`absolute right-0 translate-x-1/2 ${door.h} w-4 border-2 border-slate-200 bg-[#090d16] z-30 flex items-center`}
+                  className={`absolute left-0 -translate-x-1/2 ${door.h} w-4 border-2 border-slate-200 bg-[#090d16] z-30 flex items-center justify-end`}
                 >
-                  <span className="absolute left-full ml-3 text-xs font-black tracking-wider text-slate-300 whitespace-nowrap">
+                  <span className="absolute right-full mr-3 text-xs font-black tracking-wider text-slate-300 whitespace-nowrap">
                     PORTA
                   </span>
                 </div>
               ))}
 
-              <div className="grid grid-cols-12 gap-6 h-[37%] min-h-0">
+              {/* PARTE SUPERIOR: LINHAS DE 8 ATÉ 5 */}
+              <div className="grid grid-cols-12 gap-4 h-[48%] min-h-0">
                 <div className="col-span-6 flex flex-col justify-between h-full pr-2">
-                  <PlatformLine id="L1-E" />
-                  <PlatformLine id="L2-E" />
-                  <div className="text-center text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
-                    Comissionamento
-                  </div>
-                  <PlatformLine id="L3-E" />
+                  <PlatformLine id="L8-E" />
+                  <PlatformLine id="L7-E" />
+                  <PlatformLine id="L6-E" />
+                  <PlatformLine id="L5-E" />
                 </div>
 
-                <div className="col-span-6 h-full border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-3 pr-6 flex flex-col justify-between relative">
+                <div className="col-span-6 flex flex-col justify-between h-full pl-2">
+                  <PlatformLine id="L8-D" />
+                  <PlatformLine id="L7-D" />
+                  <PlatformLine id="L6-D" />
+                  <PlatformLine id="L5-D" />
+                </div>
+              </div>
+
+              {/* PARTE INFERIOR: CORREDOR ESTREITO AO CENTRO + ROTINA NO CANTO INFERIOR ESQUERDO */}
+              <div className="grid grid-cols-12 gap-3 h-[48%] min-h-0 pt-2 relative">
+                {/* Canto Inferior Esquerdo: Área Cercada Teste de Rotina */}
+                <div className="col-span-5 h-full border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2.5 flex flex-col justify-between relative">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black tracking-widest uppercase px-2.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                    <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
                       Área Isolada por Cerca — Teste de Rotina
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2.5 my-auto">
+                  <div className="grid grid-cols-3 gap-1.5 my-auto">
                     {["ROT-1", "ROT-2", "ROT-3"].map((rotId) => {
                       const r = slots[rotId] || INITIAL_DATA[rotId];
                       const occ = Boolean(r.project);
@@ -296,64 +382,49 @@ const firebaseConfig = {
                         <div
                           key={rotId}
                           onClick={() => openModal(rotId)}
-                          className={`p-2.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[92px] ${
+                          className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[75px] ${
                             occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-extrabold text-slate-300 uppercase">{r.label}</span>
-                            {occ && <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-sky-400 text-slate-950">ROTINA</span>}
+                            <span className="text-[8px] font-extrabold text-slate-300 uppercase">{r.label}</span>
+                            {occ && <span className="text-[8px] font-black px-1 rounded bg-sky-400 text-slate-950">ROTINA</span>}
                           </div>
                           {occ ? (
                             <div>
-                              <div className="text-xs font-black text-white truncate mt-1">{r.project}</div>
-                              <div className="flex flex-wrap gap-1 mt-1">
+                              <div className="text-[10px] font-black text-white truncate mt-0.5">{r.project}</div>
+                              <div className="flex flex-wrap gap-0.5 mt-0.5">
                                 {r.panels.map((p, idx) => (
-                                  <span key={idx} className="text-[10px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200">
+                                  <span key={idx} className="text-[8px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200">
                                     {p}
                                   </span>
                                 ))}
                               </div>
                             </div>
                           ) : (
-                            <div className="text-xs font-bold text-slate-400 text-center my-auto">+ Disponível</div>
+                            <div className="text-[10px] font-bold text-slate-400 text-center my-auto">+ Disponível</div>
                           )}
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-12 gap-4 h-[60%] min-h-0 pt-2">
-                <div className="col-span-5 flex flex-col justify-between h-full">
-                  <PlatformLine id="L4-E" />
-                  <PlatformLine id="L5-E" />
-                  <div className="text-center text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
-                    Comissionamento
-                  </div>
-                  <PlatformLine id="L6-E" />
-                  <PlatformLine id="L7-E" />
-                  <PlatformLine id="L8-E" />
-                </div>
-
-                <div className="col-span-2 h-full flex items-center justify-center px-3">
-                  <div className="w-full h-full border-4 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center">
-                    <span className="text-base font-black tracking-[0.35em] text-slate-200 uppercase -rotate-90 whitespace-nowrap">
+                {/* Corredor Central Mais Estreito e Deslocado para Cima */}
+                <div className="col-span-2 h-full flex items-center justify-center px-1">
+                  <div className="w-full h-3/4 border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
+                    <span className="text-xs font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
                       Corredor
                     </span>
                   </div>
                 </div>
 
-                <div className="col-span-5 flex flex-col justify-between h-full pr-5">
+                {/* Direita: Linhas 4 a 1 */}
+                <div className="col-span-5 flex flex-col justify-between h-full pl-1">
                   <PlatformLine id="L4-D" />
-                  <PlatformLine id="L5-D" />
-                  <div className="text-center text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
-                    Comissionamento
-                  </div>
-                  <PlatformLine id="L6-D" />
-                  <PlatformLine id="L7-D" />
-                  <PlatformLine id="L8-D" />
+                  <PlatformLine id="L3-D" />
+                  <PlatformLine id="L2-D" />
+                  <PlatformLine id="L1-D" />
                 </div>
               </div>
 
