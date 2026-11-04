@@ -27,10 +27,13 @@ const firebaseConfig = {
 };
 
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    window.firebaseDB = { db, ref, onValue, set };
+    try {
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      window.firebaseDB = { db, ref, onValue, set };
+    } catch (err) {
+      console.error("Erro ao iniciar Firebase:", err);
+    }
   </script>
   <style>
     body { user-select: none; overflow: hidden; background-color: #090d16; }
@@ -42,21 +45,17 @@ const firebaseConfig = {
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Logo WEG com geometria proporcional exata (espessura constante de 18px em todas as letras)
+    // Logo WEG com geometria proporcional exata
     const WegLogo = ({ className = "h-9 w-auto" }) => (
       <svg viewBox="0 0 246 154" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Barra Superior e Contorno Esquerdo */}
         <path d="M10 10 H236 V28 H28 V112 H10 V10 Z" fill="#00579D" />
-        {/* Letra W */}
         <path d="M38 40 H56 V94 H68 V40 H86 V94 H98 V40 H116 V112 H38 V40 Z" fill="#00579D" />
-        {/* Letra E (vazado real com evenodd) */}
         <path
           fillRule="evenodd"
           clipRule="evenodd"
           d="M126 40 H176 V84 H144 V94 H176 V112 H126 V40 Z M144 58 H158 V68 H144 V58 Z"
           fill="#00579D"
         />
-        {/* Letra G e Barra Inferior (proporção corrigida com hastes de 18px) */}
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -93,8 +92,27 @@ const firebaseConfig = {
       "ROT-6": { id: "ROT-6", label: "PLATAFORMA 6", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
     };
 
+    // Garante que mesmo se o Firebase apagar arrays vazios, a estrutura nunca quebre
+    const normalizeSlots = (raw) => {
+      const merged = { ...INITIAL_DATA };
+      if (raw && typeof raw === "object") {
+        Object.keys(INITIAL_DATA).forEach((key) => {
+          if (raw[key]) {
+            merged[key] = {
+              ...INITIAL_DATA[key],
+              ...raw[key],
+              panels: Array.isArray(raw[key].panels) ? raw[key].panels : [],
+            };
+          }
+        });
+      }
+      return merged;
+    };
+
     function App() {
-      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return sessionStorage.getItem("weg_lab_auth") === "true";
+      });
       const [loginUser, setLoginUser] = useState("");
       const [loginPass, setLoginPass] = useState("");
       const [loginError, setLoginError] = useState(false);
@@ -112,16 +130,17 @@ const firebaseConfig = {
         const checkFirebase = setInterval(() => {
           if (window.firebaseDB) {
             clearInterval(checkFirebase);
-            const { db, ref, onValue } = window.firebaseDB;
-            const slotsRef = ref(db, 'laboratorio/slots_v10');
+            const { db, ref, onValue, set } = window.firebaseDB;
+            const slotsRef = ref(db, "laboratorio/slots_v10");
 
             onValue(slotsRef, (snapshot) => {
               const data = snapshot.val();
               if (data) {
-                setSlots(data);
+                setSlots(normalizeSlots(data));
                 setIsConnected(true);
               } else {
-                window.firebaseDB.set(slotsRef, INITIAL_DATA);
+                set(slotsRef, INITIAL_DATA);
+                setSlots(INITIAL_DATA);
               }
             });
           }
@@ -131,10 +150,11 @@ const firebaseConfig = {
       }, []);
 
       const updateSlotsInCloud = (newSlots) => {
-        setSlots(newSlots);
+        const safeSlots = normalizeSlots(newSlots);
+        setSlots(safeSlots);
         if (window.firebaseDB) {
           const { db, ref, set } = window.firebaseDB;
-          set(ref(db, 'laboratorio/slots_v10'), newSlots);
+          set(ref(db, "laboratorio/slots_v10"), safeSlots);
         }
       };
 
@@ -145,7 +165,8 @@ const firebaseConfig = {
 
       const handleLogin = (e) => {
         e.preventDefault();
-        if (loginUser === "Comissionamento" && loginPass === "Weg@1234") {
+        if (loginUser.trim() === "Comissionamento" && loginPass === "Weg@1234") {
+          sessionStorage.setItem("weg_lab_auth", "true");
           setIsAuthenticated(true);
           setLoginError(false);
         } else {
@@ -159,16 +180,19 @@ const firebaseConfig = {
         setFormProject(item.project || "");
         setFormStage(item.stage || (id.startsWith("ROT") ? "ROTINA" : "PRE-TAF"));
         setFormStatus(item.status || "NO PRAZO");
-        setFormPanels((item.panels || []).join(", "));
+        setFormPanels(Array.isArray(item.panels) ? item.panels.join(", ") : "");
       };
 
       const saveSlot = (e) => {
         e.preventDefault();
-        const panelsList = formPanels.split(",").map((s) => s.trim()).filter(Boolean);
+        const panelsList = formPanels
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
         const updated = {
           ...slots,
           [editingId]: {
-            ...slots[editingId],
+            ...(slots[editingId] || INITIAL_DATA[editingId]),
             project: formProject.trim(),
             stage: formStage,
             status: formStatus,
@@ -183,7 +207,7 @@ const firebaseConfig = {
         const updated = {
           ...slots,
           [editingId]: {
-            ...slots[editingId],
+            ...(slots[editingId] || INITIAL_DATA[editingId]),
             project: "",
             panels: [],
           },
@@ -194,20 +218,21 @@ const firebaseConfig = {
 
       const toggleStage = (e, id) => {
         e.stopPropagation();
-        const curr = slots[id].stage;
-        const next = curr === "TAF" ? "PRE-TAF" : "TAF";
+        const currentItem = slots[id] || INITIAL_DATA[id];
+        const next = currentItem.stage === "TAF" ? "PRE-TAF" : "TAF";
         const updated = {
           ...slots,
-          [id]: { ...slots[id], stage: next },
+          [id]: { ...currentItem, stage: next },
         };
         updateSlotsInCloud(updated);
       };
 
-      const totalOccupied = Object.values(slots).filter((s) => s.project).length;
-      const totalAvailable = Object.values(slots).length - totalOccupied;
+      const totalOccupied = Object.values(slots).filter((s) => s && s.project).length;
+      const totalAvailable = Object.keys(INITIAL_DATA).length - totalOccupied;
 
       const PlatformLine = ({ id }) => {
         const data = slots[id] || INITIAL_DATA[id];
+        const panels = Array.isArray(data.panels) ? data.panels : [];
         const isOccupied = Boolean(data.project);
         const isTAF = data.stage === "TAF";
         const isDelayed = data.status === "ATRASADO";
@@ -219,7 +244,9 @@ const firebaseConfig = {
               <div
                 onClick={() => openModal(id)}
                 className={`relative z-10 w-full flex items-center justify-between px-3 py-1 rounded-lg border-2 cursor-pointer transition-all shadow-lg ${
-                  isTAF ? "bg-emerald-950/95 border-emerald-500 hover:bg-emerald-900" : "bg-amber-950/95 border-amber-500 hover:bg-amber-900"
+                  isTAF
+                    ? "bg-emerald-950/95 border-emerald-500 hover:bg-emerald-900"
+                    : "bg-amber-950/95 border-amber-500 hover:bg-amber-900"
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -229,8 +256,11 @@ const firebaseConfig = {
                   <div className="truncate">
                     <div className="text-xs font-black text-white truncate">{data.project}</div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
-                      {data.panels.map((p, idx) => (
-                        <span key={idx} className="text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15">
+                      {panels.map((p, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15"
+                        >
                           {p}
                         </span>
                       ))}
@@ -239,15 +269,19 @@ const firebaseConfig = {
                 </div>
 
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
-                  <span className={`text-[8px] font-black px-1.5 py-0.2 rounded tracking-wider uppercase ${
-                    isDelayed ? "bg-rose-600 text-white animate-pulse" : "bg-sky-600/80 text-white"
-                  }`}>
+                  <span
+                    className={`text-[8px] font-black px-1.5 py-0.2 rounded tracking-wider uppercase ${
+                      isDelayed ? "bg-rose-600 text-white animate-pulse" : "bg-sky-600/80 text-white"
+                    }`}
+                  >
                     {data.status || "NO PRAZO"}
                   </span>
                   <button
                     onClick={(e) => toggleStage(e, id)}
                     className={`px-2 py-0.2 rounded text-[9px] font-black tracking-wider uppercase border transition ${
-                      isTAF ? "bg-emerald-500 text-slate-950 border-emerald-300" : "bg-amber-400 text-slate-950 border-amber-200"
+                      isTAF
+                        ? "bg-emerald-500 text-slate-950 border-emerald-300"
+                        : "bg-amber-400 text-slate-950 border-amber-200"
                     }`}
                   >
                     {isTAF ? "EM TAF" : "PRÉ-TAF"}
@@ -270,12 +304,17 @@ const firebaseConfig = {
       if (!isAuthenticated) {
         return (
           <div className="h-screen w-screen flex items-center justify-center bg-[#090d16] p-4">
-            <form onSubmit={handleLogin} className="bg-slate-900 border-2 border-slate-700 rounded-2xl w-full max-w-sm p-8 shadow-2xl space-y-5">
+            <form
+              onSubmit={handleLogin}
+              className="bg-slate-900 border-2 border-slate-700 rounded-2xl w-full max-w-sm p-8 shadow-2xl space-y-5"
+            >
               <div className="text-center space-y-2">
                 <div className="flex justify-center mb-2">
                   <WegLogo className="h-14 w-auto" />
                 </div>
-                <h1 className="text-xl font-black text-white uppercase tracking-wider">Laboratório de Ensaios</h1>
+                <h1 className="text-xl font-black text-white uppercase tracking-wider">
+                  Laboratório de Ensaios
+                </h1>
                 <p className="text-xs text-slate-400">Insira as credenciais de acesso</p>
               </div>
 
@@ -287,7 +326,9 @@ const firebaseConfig = {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Usuário</label>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Usuário
+                  </label>
                   <input
                     type="text"
                     value={loginUser}
@@ -299,7 +340,9 @@ const firebaseConfig = {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Senha</label>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Senha
+                  </label>
                   <input
                     type="password"
                     value={loginPass}
@@ -333,7 +376,11 @@ const firebaseConfig = {
                 </h1>
                 <p className="text-[11px] text-slate-400 flex items-center gap-2">
                   <span>Sincronizado em Nuvem</span>
-                  <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                    }`}
+                  />
                 </p>
               </div>
             </div>
@@ -353,10 +400,19 @@ const firebaseConfig = {
 
               <div className="text-right pl-4 border-l border-slate-800">
                 <div className="text-xl font-mono font-black text-white leading-none">
-                  {clock.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                  {clock.toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
                 </div>
                 <div className="text-[10px] text-slate-400 uppercase mt-0.5">
-                  {clock.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })}
+                  {clock.toLocaleDateString("pt-BR", {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </div>
               </div>
             </div>
@@ -364,7 +420,6 @@ const firebaseConfig = {
 
           <div className="flex-1 relative pl-16 pb-1 min-h-0">
             <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] px-5 py-3.5">
-              
               {/* 5 PORTAS NA PAREDE ESQUERDA */}
               {[
                 { top: "2%", h: "h-8" },
@@ -384,9 +439,8 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* GRADE MESTRE COM COLUNA DO CORREDOR AJUSTADA (1fr_auto_1fr) PARA ENCOSTAR AS LINHAS NO CORREDOR */}
+              {/* GRADE MESTRE COM COLUNA DO CORREDOR AJUSTADA (1fr_auto_1fr) */}
               <div className="grid grid-cols-[1fr_auto_1fr] grid-rows-8 gap-x-3 gap-y-1.5 h-full w-full min-h-0">
-                
                 {/* LINHA 1 (ESQUERDA + CORREDOR + DIREITA) */}
                 <div className="col-start-1 row-start-1 flex items-center">
                   <PlatformLine id="L1-E" />
@@ -402,7 +456,7 @@ const firebaseConfig = {
                   <PlatformLine id="RD-1" />
                 </div>
 
-                {/* LINHA 2 (ESQUERDA + DIREITA) */}
+                {/* LINHA 2 */}
                 <div className="col-start-1 row-start-2 flex items-center">
                   <PlatformLine id="L2-E" />
                 </div>
@@ -410,7 +464,7 @@ const firebaseConfig = {
                   <PlatformLine id="RD-2" />
                 </div>
 
-                {/* LINHA 3 (ESQUERDA + DIREITA) */}
+                {/* LINHA 3 */}
                 <div className="col-start-1 row-start-3 flex items-center">
                   <PlatformLine id="L3-E" />
                 </div>
@@ -418,7 +472,7 @@ const firebaseConfig = {
                   <PlatformLine id="RD-3" />
                 </div>
 
-                {/* LINHA 4 (ESQUERDA + DIREITA) */}
+                {/* LINHA 4 */}
                 <div className="col-start-1 row-start-4 flex items-center">
                   <PlatformLine id="L4-E" />
                 </div>
@@ -426,7 +480,7 @@ const firebaseConfig = {
                   <PlatformLine id="RD-4" />
                 </div>
 
-                {/* LINHA 5 (ESQUERDA + DIREITA) */}
+                {/* LINHA 5 */}
                 <div className="col-start-1 row-start-5 flex items-center">
                   <PlatformLine id="L5-E" />
                 </div>
@@ -434,7 +488,7 @@ const firebaseConfig = {
                   <PlatformLine id="RD-5" />
                 </div>
 
-                {/* LINHAS 6 A 8: ESQUERDA = TESTE DE ROTINA (ROW-SPAN-3) | DIREITA = LINHAS 6, 7 E 8 */}
+                {/* LINHAS 6 A 8: ESQUERDA = TESTE DE ROTINA | DIREITA = LINHAS 6, 7 E 8 */}
                 <div className="col-start-1 row-start-6 row-span-3 border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative mt-1">
                   <div className="flex items-center justify-between shrink-0 mb-1">
                     <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
@@ -445,32 +499,48 @@ const firebaseConfig = {
                   <div className="grid grid-cols-3 grid-rows-2 gap-1.5 flex-1 min-h-0">
                     {["ROT-1", "ROT-2", "ROT-3", "ROT-4", "ROT-5", "ROT-6"].map((rotId) => {
                       const r = slots[rotId] || INITIAL_DATA[rotId];
+                      const rPanels = Array.isArray(r.panels) ? r.panels : [];
                       const occ = Boolean(r.project);
                       return (
                         <div
                           key={rotId}
                           onClick={() => openModal(rotId)}
                           className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between h-full min-h-0 overflow-hidden ${
-                            occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
+                            occ
+                              ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900"
+                              : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
                           }`}
                         >
                           <div className="flex items-center justify-between shrink-0">
-                            <span className="text-[8px] font-extrabold text-slate-300 uppercase truncate">{r.label}</span>
-                            {occ && <span className="text-[7px] font-black px-1 rounded bg-sky-400 text-slate-950 shrink-0">ROT</span>}
+                            <span className="text-[8px] font-extrabold text-slate-300 uppercase truncate">
+                              {r.label}
+                            </span>
+                            {occ && (
+                              <span className="text-[7px] font-black px-1 rounded bg-sky-400 text-slate-950 shrink-0">
+                                ROT
+                              </span>
+                            )}
                           </div>
                           {occ ? (
                             <div className="min-h-0 overflow-hidden">
-                              <div className="text-[10px] font-black text-white truncate">{r.project}</div>
+                              <div className="text-[10px] font-black text-white truncate">
+                                {r.project}
+                              </div>
                               <div className="flex flex-wrap gap-0.5 mt-0.5">
-                                {r.panels.map((p, idx) => (
-                                  <span key={idx} className="text-[7px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200">
+                                {rPanels.map((p, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-[7px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200"
+                                  >
                                     {p}
                                   </span>
                                 ))}
                               </div>
                             </div>
                           ) : (
-                            <div className="text-[9px] font-bold text-slate-400 text-center my-auto">+ Disponível</div>
+                            <div className="text-[9px] font-bold text-slate-400 text-center my-auto">
+                              + Disponível
+                            </div>
                           )}
                         </div>
                       );
@@ -492,22 +562,33 @@ const firebaseConfig = {
                 <div className="col-start-3 row-start-8 flex items-center">
                   <PlatformLine id="RD-8" />
                 </div>
-
               </div>
-
             </div>
           </div>
 
           {editingId && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-              <form onSubmit={saveSlot} className="bg-slate-900 border-2 border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl space-y-4">
+              <form
+                onSubmit={saveSlot}
+                className="bg-slate-900 border-2 border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl space-y-4"
+              >
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h2 className="text-lg font-black text-white">Editar {(slots[editingId] || INITIAL_DATA[editingId]).label}</h2>
-                  <button type="button" onClick={() => setEditingId(null)} className="text-slate-400 hover:text-white font-bold text-sm">FECHAR ✕</button>
+                  <h2 className="text-lg font-black text-white">
+                    Editar {(slots[editingId] || INITIAL_DATA[editingId]).label}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(null)}
+                    className="text-slate-400 hover:text-white font-bold text-sm"
+                  >
+                    FECHAR ✕
+                  </button>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Nome do Projeto / Cliente</label>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Nome do Projeto / Cliente
+                  </label>
                   <input
                     type="text"
                     value={formProject}
@@ -520,19 +601,29 @@ const firebaseConfig = {
 
                 {!editingId.startsWith("ROT") && (
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Fase do Ensaio</label>
+                    <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                      Fase do Ensaio
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setFormStage("PRE-TAF")}
-                        className={`py-2 rounded-lg font-black text-xs border-2 transition ${formStage === "PRE-TAF" ? "bg-amber-400 text-slate-950 border-amber-200" : "bg-slate-950 text-slate-400 border-slate-800"}`}
+                        className={`py-2 rounded-lg font-black text-xs border-2 transition ${
+                          formStage === "PRE-TAF"
+                            ? "bg-amber-400 text-slate-950 border-amber-200"
+                            : "bg-slate-950 text-slate-400 border-slate-800"
+                        }`}
                       >
                         PRÉ-TAF
                       </button>
                       <button
                         type="button"
                         onClick={() => setFormStage("TAF")}
-                        className={`py-2 rounded-lg font-black text-xs border-2 transition ${formStage === "TAF" ? "bg-emerald-500 text-slate-950 border-emerald-300" : "bg-slate-950 text-slate-400 border-slate-800"}`}
+                        className={`py-2 rounded-lg font-black text-xs border-2 transition ${
+                          formStage === "TAF"
+                            ? "bg-emerald-500 text-slate-950 border-emerald-300"
+                            : "bg-slate-950 text-slate-400 border-slate-800"
+                        }`}
                       >
                         EM TAF
                       </button>
@@ -541,19 +632,29 @@ const firebaseConfig = {
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Status do Prazo</label>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Status do Prazo
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setFormStatus("NO PRAZO")}
-                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${formStatus === "NO PRAZO" ? "bg-sky-500 text-slate-950 border-sky-300" : "bg-slate-950 text-slate-400 border-slate-800"}`}
+                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${
+                        formStatus === "NO PRAZO"
+                          ? "bg-sky-500 text-slate-950 border-sky-300"
+                          : "bg-slate-950 text-slate-400 border-slate-800"
+                      }`}
                     >
                       NO PRAZO
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormStatus("ATRASADO")}
-                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${formStatus === "ATRASADO" ? "bg-rose-600 text-white border-rose-400" : "bg-slate-950 text-slate-400 border-slate-800"}`}
+                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${
+                        formStatus === "ATRASADO"
+                          ? "bg-rose-600 text-white border-rose-400"
+                          : "bg-slate-950 text-slate-400 border-slate-800"
+                      }`}
                     >
                       ATRASADO
                     </button>
@@ -561,7 +662,9 @@ const firebaseConfig = {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Códigos dos Painéis (separados por vírgula)</label>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Códigos dos Painéis (separados por vírgula)
+                  </label>
                   <input
                     type="text"
                     value={formPanels}
@@ -572,10 +675,27 @@ const firebaseConfig = {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-800">
-                  <button type="button" onClick={clearSlot} className="px-4 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 text-xs font-bold">Liberar Linha</button>
+                  <button
+                    type="button"
+                    onClick={clearSlot}
+                    className="px-4 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 text-xs font-bold"
+                  >
+                    Liberar Linha
+                  </button>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold">Cancelar</button>
-                    <button type="submit" className="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black">Salvar</button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black"
+                    >
+                      Salvar
+                    </button>
                   </div>
                 </div>
               </form>
