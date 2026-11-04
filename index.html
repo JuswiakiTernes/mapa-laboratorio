@@ -42,19 +42,27 @@ const firebaseConfig = {
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Componente SVG fiel ao Logo da WEG enviado
+    // Logo WEG com geometria proporcional exata (espessura constante de 18px em todas as letras)
     const WegLogo = ({ className = "h-9 w-auto" }) => (
-      <svg viewBox="0 0 220 155" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 246 154" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Barra Superior e Contorno Esquerdo */}
-        <path d="M10 10 H210 V28 H28 V112 H10 V10 Z" fill="#00579D" />
+        <path d="M10 10 H236 V28 H28 V112 H10 V10 Z" fill="#00579D" />
         {/* Letra W */}
         <path d="M38 40 H56 V94 H68 V40 H86 V94 H98 V40 H116 V112 H38 V40 Z" fill="#00579D" />
-        {/* Letra E */}
-        <path d="M124 40 H168 V84 H142 V94 H168 V112 H124 V40 Z" fill="#00579D" />
-        <rect x="142" y="55" width="10" height="14" fill="#090d16" />
-        {/* Letra G e Barra Inferior */}
-        <path d="M176 40 H210 V145 H10 V127 H192 V112 H176 V40 Z" fill="#00579D" />
-        <rect x="192" y="55" width="10" height="40" fill="#090d16" />
+        {/* Letra E (vazado real com evenodd) */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M126 40 H176 V84 H144 V94 H176 V112 H126 V40 Z M144 58 H158 V68 H144 V58 Z"
+          fill="#00579D"
+        />
+        {/* Letra G e Barra Inferior (proporção corrigida com hastes de 18px) */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M186 40 H236 V144 H10 V126 H218 V112 H186 V40 Z M204 58 H218 V94 H204 V58 Z"
+          fill="#00579D"
+        />
       </svg>
     );
 
@@ -205,7 +213,7 @@ const firebaseConfig = {
         const isDelayed = data.status === "ATRASADO";
 
         return (
-          <div className="relative flex items-center h-full w-full px-1">
+          <div className="relative flex items-center h-full w-full">
             <div className="absolute left-0 right-0 h-1.5 bg-slate-700 rounded-full z-0" />
             {isOccupied ? (
               <div
@@ -355,7 +363,7 @@ const firebaseConfig = {
           </header>
 
           <div className="flex-1 relative pl-16 pb-1 min-h-0">
-            <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] p-3.5">
+            <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] px-5 py-3.5">
               
               {/* 5 PORTAS NA PAREDE ESQUERDA */}
               {[
@@ -376,58 +384,58 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* GRADE MESTRE UNIFICADA: 8 LINHAS EXATAS COMPARTILHADAS ENTRE ESQUERDA, CORREDOR E DIREITA */}
-              <div className="grid grid-cols-12 grid-rows-8 gap-x-2 gap-y-1.5 h-full w-full min-h-0">
+              {/* GRADE MESTRE COM COLUNA DO CORREDOR AJUSTADA (1fr_auto_1fr) PARA ENCOSTAR AS LINHAS NO CORREDOR */}
+              <div className="grid grid-cols-[1fr_auto_1fr] grid-rows-8 gap-x-3 gap-y-1.5 h-full w-full min-h-0">
                 
                 {/* LINHA 1 (ESQUERDA + CORREDOR + DIREITA) */}
-                <div className="col-span-5 row-start-1 flex items-center">
+                <div className="col-start-1 row-start-1 flex items-center">
                   <PlatformLine id="L1-E" />
                 </div>
-                <div className="col-span-2 row-start-1 row-span-8 flex items-center justify-center py-4">
-                  <div className="w-12 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
+                <div className="col-start-2 row-start-1 row-span-8 flex items-center justify-center py-2">
+                  <div className="w-11 h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
                     <span className="text-[11px] font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
                       Corredor
                     </span>
                   </div>
                 </div>
-                <div className="col-span-5 row-start-1 flex items-center">
+                <div className="col-start-3 row-start-1 flex items-center">
                   <PlatformLine id="RD-1" />
                 </div>
 
                 {/* LINHA 2 (ESQUERDA + DIREITA) */}
-                <div className="col-span-5 row-start-2 flex items-center">
+                <div className="col-start-1 row-start-2 flex items-center">
                   <PlatformLine id="L2-E" />
                 </div>
-                <div className="col-span-5 col-start-8 row-start-2 flex items-center">
+                <div className="col-start-3 row-start-2 flex items-center">
                   <PlatformLine id="RD-2" />
                 </div>
 
                 {/* LINHA 3 (ESQUERDA + DIREITA) */}
-                <div className="col-span-5 row-start-3 flex items-center">
+                <div className="col-start-1 row-start-3 flex items-center">
                   <PlatformLine id="L3-E" />
                 </div>
-                <div className="col-span-5 col-start-8 row-start-3 flex items-center">
+                <div className="col-start-3 row-start-3 flex items-center">
                   <PlatformLine id="RD-3" />
                 </div>
 
                 {/* LINHA 4 (ESQUERDA + DIREITA) */}
-                <div className="col-span-5 row-start-4 flex items-center">
+                <div className="col-start-1 row-start-4 flex items-center">
                   <PlatformLine id="L4-E" />
                 </div>
-                <div className="col-span-5 col-start-8 row-start-4 flex items-center">
+                <div className="col-start-3 row-start-4 flex items-center">
                   <PlatformLine id="RD-4" />
                 </div>
 
                 {/* LINHA 5 (ESQUERDA + DIREITA) */}
-                <div className="col-span-5 row-start-5 flex items-center">
+                <div className="col-start-1 row-start-5 flex items-center">
                   <PlatformLine id="L5-E" />
                 </div>
-                <div className="col-span-5 col-start-8 row-start-5 flex items-center">
+                <div className="col-start-3 row-start-5 flex items-center">
                   <PlatformLine id="RD-5" />
                 </div>
 
                 {/* LINHAS 6 A 8: ESQUERDA = TESTE DE ROTINA (ROW-SPAN-3) | DIREITA = LINHAS 6, 7 E 8 */}
-                <div className="col-span-5 row-start-6 row-span-3 border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative mt-1">
+                <div className="col-start-1 row-start-6 row-span-3 border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2 flex flex-col justify-between relative mt-1">
                   <div className="flex items-center justify-between shrink-0 mb-1">
                     <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
                       Teste de Rotina
@@ -471,17 +479,17 @@ const firebaseConfig = {
                 </div>
 
                 {/* DIREITA: LINHA 6 */}
-                <div className="col-span-5 col-start-8 row-start-6 flex items-center">
+                <div className="col-start-3 row-start-6 flex items-center">
                   <PlatformLine id="RD-6" />
                 </div>
 
                 {/* DIREITA: LINHA 7 */}
-                <div className="col-span-5 col-start-8 row-start-7 flex items-center">
+                <div className="col-start-3 row-start-7 flex items-center">
                   <PlatformLine id="RD-7" />
                 </div>
 
                 {/* DIREITA: LINHA 8 */}
-                <div className="col-span-5 col-start-8 row-start-8 flex items-center">
+                <div className="col-start-3 row-start-8 flex items-center">
                   <PlatformLine id="RD-8" />
                 </div>
 
