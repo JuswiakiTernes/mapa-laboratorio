@@ -43,27 +43,25 @@ const firebaseConfig = {
     const { useState, useEffect } = React;
 
     const INITIAL_DATA = {
-      // Contagem de baixo para cima (L1 a L8)
-      "L1-E": { id: "L1-E", label: "LINHA 1 (ESQ)", project: "SE Gaspar 138kV", stage: "PRE-TAF", panels: ["PN-01", "PN-02"] },
-      "L2-E": { id: "L2-E", label: "LINHA 2 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L3-E": { id: "L3-E", label: "LINHA 3 (ESQ)", project: "PCH Rio Bonito", stage: "PRE-TAF", panels: ["QTA-01", "QCSA-01"] },
-      "L4-E": { id: "L4-E", label: "LINHA 4 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L5-E": { id: "L5-E", label: "LINHA 5 (ESQ)", project: "SE Joinville Norte", stage: "TAF", panels: ["QCP-87L1", "QCP-87L2"] },
-      "L6-E": { id: "L6-E", label: "LINHA 6 (ESQ)", project: "", stage: "PRE-TAF", panels: [] },
-      "L7-E": { id: "L7-E", label: "LINHA 7 (ESQ)", project: "SE Itajaí II", stage: "PRE-TAF", panels: ["PN-87T"] },
-      "L8-E": { id: "L8-E", label: "LINHA 8 (ESQ)", project: "SE 230kV Blumenau", stage: "TAF", panels: ["QCP-01", "QCP-02"] },
+      // Esquerda Superior: Linhas 1 a 5 (conforme novo esboço)[cite: 2]
+      "L1-E": { id: "L1-E", label: "LINHA 1", project: "SE 230kV Blumenau", stage: "TAF", panels: ["QCP-01", "QCP-02"] },
+      "L2-E": { id: "L2-E", label: "LINHA 2", project: "SE Itajaí II", stage: "PRE-TAF", panels: ["PN-87T"] },
+      "L3-E": { id: "L3-E", label: "LINHA 3", project: "", stage: "PRE-TAF", panels: [] },
+      "L4-E": { id: "L4-E", label: "LINHA 4", project: "PCH Rio Bonito", stage: "PRE-TAF", panels: ["QTA-01"] },
+      "L5-E": { id: "L5-E", label: "LINHA 5", project: "", stage: "PRE-TAF", panels: [] },
 
-      "L1-D": { id: "L1-D", label: "LINHA 1 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L2-D": { id: "L2-D", label: "LINHA 2 (DIR)", project: "UFV Sol do Sertão", stage: "TAF", panels: ["SKID-01"] },
-      "L3-D": { id: "L3-D", label: "LINHA 3 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L4-D": { id: "L4-D", label: "LINHA 4 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L5-D": { id: "L5-D", label: "LINHA 5 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L6-D": { id: "L6-D", label: "LINHA 6 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L7-D": { id: "L7-D", label: "LINHA 7 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
-      "L8-D": { id: "L8-D", label: "LINHA 8 (DIR)", project: "", stage: "PRE-TAF", panels: [] },
+      // Direita: Linhas 1 a 8 correspondentes ao esboço[cite: 2]
+      "RD-1": { id: "RD-1", label: "LINHA DIR 1", project: "SE Gaspar 138kV", stage: "PRE-TAF", panels: ["PN-01"] },
+      "RD-2": { id: "RD-2", label: "LINHA DIR 2", project: "", stage: "PRE-TAF", panels: [] },
+      "RD-3": { id: "RD-3", label: "LINHA DIR 3", project: "SE Joinville Norte", stage: "TAF", panels: ["QCP-87L1"] },
+      "RD-4": { id: "RD-4", label: "LINHA DIR 4", project: "", stage: "PRE-TAF", panels: [] },
+      "RD-5": { id: "RD-5", label: "LINHA DIR 5", project: "", stage: "PRE-TAF", panels: [] },
+      "RD-6": { id: "RD-6", label: "LINHA 6", project: "UFV Sol do Sertão", stage: "TAF", panels: ["SKID-01"] },
+      "RD-7": { id: "RD-7", label: "LINHA 7", project: "", stage: "PRE-TAF", panels: [] },
+      "RD-8": { id: "RD-8", label: "LINHA 8", project: "", stage: "PRE-TAF", panels: [] },
 
-      // Área de Teste de Rotina (Canto Inferior Esquerdo)
-      "ROT-1": { id: "ROT-1", label: "BANCADA ROTINA 1", project: "Lote CCM Industrial", stage: "ROTINA", panels: ["CCM-01A", "CCM-01B"] },
+      // Canto Inferior Esquerdo: Teste de Rotina[cite: 2]
+      "ROT-1": { id: "ROT-1", label: "BANCADA ROTINA 1", project: "Lote CCM Industrial", stage: "ROTINA", panels: ["CCM-01A"] },
       "ROT-2": { id: "ROT-2", label: "BANCADA ROTINA 2", project: "SE Tubarão", stage: "ROTINA", panels: ["QDCA-01"] },
       "ROT-3": { id: "ROT-3", label: "BANCADA ROTINA 3", project: "", stage: "ROTINA", panels: [] },
     };
@@ -87,7 +85,7 @@ const firebaseConfig = {
           if (window.firebaseDB) {
             clearInterval(checkFirebase);
             const { db, ref, onValue } = window.firebaseDB;
-            const slotsRef = ref(db, 'laboratorio/slots');
+            const slotsRef = ref(db, 'laboratorio/slots_v3');
 
             onValue(slotsRef, (snapshot) => {
               const data = snapshot.val();
@@ -108,7 +106,7 @@ const firebaseConfig = {
         setSlots(newSlots);
         if (window.firebaseDB) {
           const { db, ref, set } = window.firebaseDB;
-          set(ref(db, 'laboratorio/slots'), newSlots);
+          set(ref(db, 'laboratorio/slots_v3'), newSlots);
         }
       };
 
@@ -189,19 +187,19 @@ const firebaseConfig = {
             {isOccupied ? (
               <div
                 onClick={() => openModal(id)}
-                className={`relative z-10 w-full flex items-center justify-between px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-all shadow-lg ${
+                className={`relative z-10 w-full flex items-center justify-between px-3 py-1 rounded-lg border-2 cursor-pointer transition-all shadow-lg ${
                   isTAF ? "bg-emerald-950/95 border-emerald-500 hover:bg-emerald-900" : "bg-amber-950/95 border-amber-500 hover:bg-amber-900"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded bg-black/50 text-slate-300 shrink-0">
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-black/50 text-slate-300 shrink-0">
                     {data.label}
                   </span>
                   <div className="truncate">
                     <div className="text-xs font-black text-white truncate">{data.project}</div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {data.panels.map((p, idx) => (
-                        <span key={idx} className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15">
+                        <span key={idx} className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/60 text-slate-200 border border-white/15">
                           {p}
                         </span>
                       ))}
@@ -210,7 +208,7 @@ const firebaseConfig = {
                 </div>
                 <button
                   onClick={(e) => toggleStage(e, id)}
-                  className={`shrink-0 px-2.5 py-1 rounded text-[11px] font-black tracking-wider uppercase border transition ${
+                  className={`shrink-0 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border transition ${
                     isTAF ? "bg-emerald-500 text-slate-950 border-emerald-300" : "bg-amber-400 text-slate-950 border-amber-200"
                   }`}
                 >
@@ -220,7 +218,7 @@ const firebaseConfig = {
             ) : (
               <button
                 onClick={() => openModal(id)}
-                className="relative z-10 mx-auto px-3 py-0.5 rounded-full bg-slate-900/95 border border-dashed border-slate-600 hover:border-sky-400 text-slate-400 hover:text-sky-300 text-[11px] font-bold flex items-center gap-2 transition"
+                className="relative z-10 mx-auto px-3 py-0.5 rounded-full bg-slate-900/95 border border-dashed border-slate-600 hover:border-sky-400 text-slate-400 hover:text-sky-300 text-[10px] font-bold flex items-center gap-2 transition"
               >
                 <span>{data.label}: DISPONÍVEL</span>
                 <span className="text-sky-400 font-black">+ Adicionar</span>
@@ -328,13 +326,13 @@ const firebaseConfig = {
           <div className="flex-1 relative pl-20 pb-2 min-h-0">
             <div className="w-full h-full relative border-4 border-slate-300 rounded-lg bg-[#0d1320] flex flex-col justify-between p-5">
               
-              {/* 5 PORTAS NA PAREDE ESQUERDA (ESPELHADAS) */}
+              {/* 5 PORTAS NA PAREDE ESQUERDA (EXATAMENTE COMO NO NOVO ESBOÇO)[cite: 2] */}
               {[
-                { top: "8%", h: "h-16" },
-                { top: "36%", h: "h-16" },
-                { top: "56%", h: "h-16" },
-                { top: "75%", h: "h-16" },
-                { top: "92%", h: "h-8" },
+                { top: "3%", h: "h-10" },
+                { top: "16%", h: "h-16" },
+                { top: "37%", h: "h-16" },
+                { top: "58%", h: "h-16" },
+                { top: "84%", h: "h-16" },
               ].map((door, i) => (
                 <div
                   key={i}
@@ -347,85 +345,85 @@ const firebaseConfig = {
                 </div>
               ))}
 
-              {/* PARTE SUPERIOR: LINHAS DE 8 ATÉ 5 */}
-              <div className="grid grid-cols-12 gap-4 h-[48%] min-h-0">
-                <div className="col-span-6 flex flex-col justify-between h-full pr-2">
-                  <PlatformLine id="L8-E" />
-                  <PlatformLine id="L7-E" />
-                  <PlatformLine id="L6-E" />
-                  <PlatformLine id="L5-E" />
-                </div>
-
-                <div className="col-span-6 flex flex-col justify-between h-full pl-2">
-                  <PlatformLine id="L8-D" />
-                  <PlatformLine id="L7-D" />
-                  <PlatformLine id="L6-D" />
-                  <PlatformLine id="L5-D" />
-                </div>
-              </div>
-
-              {/* PARTE INFERIOR: CORREDOR ESTREITO AO CENTRO + ROTINA NO CANTO INFERIOR ESQUERDO */}
-              <div className="grid grid-cols-12 gap-3 h-[48%] min-h-0 pt-2 relative">
-                {/* Canto Inferior Esquerdo: Área Cercada Teste de Rotina */}
-                <div className="col-span-5 h-full border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2.5 flex flex-col justify-between relative">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
-                      Área Isolada por Cerca — Teste de Rotina
-                    </span>
+              {/* LAYOUT PRINCIPAL: DIVIDIDO EM DUAS COLUNAS COM CORREDOR ESTREITO AO CENTRO[cite: 2] */}
+              <div className="grid grid-cols-12 gap-3 h-full min-h-0 items-center">
+                
+                {/* COLUNA ESQUERDA: LINHAS 1 A 5 + TESTE DE ROTINA EMBAIXO[cite: 2] */}
+                <div className="col-span-5 h-full flex flex-col justify-between pr-2">
+                  <div className="space-y-1.5">
+                    <PlatformLine id="L1-E" />
+                    <PlatformLine id="L2-E" />
+                    <PlatformLine id="L3-E" />
+                    <PlatformLine id="L4-E" />
+                    <PlatformLine id="L5-E" />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1.5 my-auto">
-                    {["ROT-1", "ROT-2", "ROT-3"].map((rotId) => {
-                      const r = slots[rotId] || INITIAL_DATA[rotId];
-                      const occ = Boolean(r.project);
-                      return (
-                        <div
-                          key={rotId}
-                          onClick={() => openModal(rotId)}
-                          className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[75px] ${
-                            occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-[8px] font-extrabold text-slate-300 uppercase">{r.label}</span>
-                            {occ && <span className="text-[8px] font-black px-1 rounded bg-sky-400 text-slate-950">ROTINA</span>}
-                          </div>
-                          {occ ? (
-                            <div>
-                              <div className="text-[10px] font-black text-white truncate mt-0.5">{r.project}</div>
-                              <div className="flex flex-wrap gap-0.5 mt-0.5">
-                                {r.panels.map((p, idx) => (
-                                  <span key={idx} className="text-[8px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200">
-                                    {p}
-                                  </span>
-                                ))}
-                              </div>
+                  {/* Teste de Rotina no Canto Inferior Esquerdo[cite: 2] */}
+                  <div className="h-[40%] border-4 border-dashed border-yellow-500/80 rounded-lg bg-yellow-950/10 p-2.5 flex flex-col justify-between relative mt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                        Teste de Rotina
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 my-auto">
+                      {["ROT-1", "ROT-2", "ROT-3"].map((rotId) => {
+                        const r = slots[rotId] || INITIAL_DATA[rotId];
+                        const occ = Boolean(r.project);
+                        return (
+                          <div
+                            key={rotId}
+                            onClick={() => openModal(rotId)}
+                            className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between min-h-[65px] ${
+                              occ ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900" : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[8px] font-extrabold text-slate-300 uppercase">{r.label}</span>
+                              {occ && <span className="text-[8px] font-black px-1 rounded bg-sky-400 text-slate-950">ROT</span>}
                             </div>
-                          ) : (
-                            <div className="text-[10px] font-bold text-slate-400 text-center my-auto">+ Disponível</div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {occ ? (
+                              <div>
+                                <div className="text-[10px] font-black text-white truncate mt-0.5">{r.project}</div>
+                                <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                  {r.panels.map((p, idx) => (
+                                    <span key={idx} className="text-[8px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200">
+                                      {p}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-[9px] font-bold text-slate-400 text-center my-auto">+ Disponível</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                {/* Corredor Central Mais Estreito e Deslocado para Cima */}
-                <div className="col-span-2 h-full flex items-center justify-center px-1">
-                  <div className="w-full h-3/4 border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
+                {/* CORREDOR CENTRAL ESTREITO[cite: 2] */}
+                <div className="col-span-2 h-[75%] flex items-center justify-center px-1">
+                  <div className="w-full h-full border-2 border-slate-300 bg-slate-900/80 rounded flex items-center justify-center shadow-inner">
                     <span className="text-xs font-black tracking-[0.25em] text-slate-300 uppercase -rotate-90 whitespace-nowrap">
                       Corredor
                     </span>
                   </div>
                 </div>
 
-                {/* Direita: Linhas 4 a 1 */}
-                <div className="col-span-5 flex flex-col justify-between h-full pl-1">
-                  <PlatformLine id="L4-D" />
-                  <PlatformLine id="L3-D" />
-                  <PlatformLine id="L2-D" />
-                  <PlatformLine id="L1-D" />
+                {/* COLUNA DIREITA: LINHAS 1 A 8[cite: 2] */}
+                <div className="col-span-5 h-full flex flex-col justify-between pl-2 py-1">
+                  <PlatformLine id="RD-1" />
+                  <PlatformLine id="RD-2" />
+                  <PlatformLine id="RD-3" />
+                  <PlatformLine id="RD-4" />
+                  <PlatformLine id="RD-5" />
+                  <PlatformLine id="RD-6" />
+                  <PlatformLine id="RD-7" />
+                  <PlatformLine id="RD-8" />
                 </div>
+
               </div>
 
             </div>
