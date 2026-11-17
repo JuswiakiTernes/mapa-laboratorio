@@ -13,9 +13,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // ----------------------------------------------------
-    // COLE AS SUAS CREDENCIAIS DO FIREBASE AQUI EMBAIXO:
-    // ----------------------------------------------------
     // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCMMaBwf1CWZhuG62hgGjYx3Sl4TdbtrsI",
@@ -66,42 +63,55 @@ const firebaseConfig = {
     );
 
     const INITIAL_DATA = {
-      // Esquerda: Linhas 1 a 5
-      "L1-E": { id: "L1-E", label: "LINHA 1", project: "SE 230kV Blumenau", stage: "TAF", status: "NO PRAZO", panels: ["QCP-01", "QCP-02"] },
-      "L2-E": { id: "L2-E", label: "LINHA 2", project: "SE Itajaí II", stage: "PRE-TAF", status: "ATRASADO", panels: ["PN-87T"] },
-      "L3-E": { id: "L3-E", label: "LINHA 3", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
-      "L4-E": { id: "L4-E", label: "LINHA 4", project: "PCH Rio Bonito", stage: "PRE-TAF", status: "NO PRAZO", panels: ["QTA-01"] },
-      "L5-E": { id: "L5-E", label: "LINHA 5", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
+      // Esquerda: L1 a L5
+      "L1-E": { id: "L1-E", label: "L1", project: "SE 230kV Blumenau", responsible: "Carlos", stage: "TAF", attention: false, panels: ["QCP-01", "QCP-02"] },
+      "L2-E": { id: "L2-E", label: "L2", project: "SE Itajaí II", responsible: "Rafael", stage: "PRE-TAF", attention: true, panels: ["PN-87T"] },
+      "L3-E": { id: "L3-E", label: "L3", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
+      "L4-E": { id: "L4-E", label: "L4", project: "PCH Rio Bonito", responsible: "Marcos", stage: "PRE-TAF", attention: false, panels: ["QTA-01"] },
+      "L5-E": { id: "L5-E", label: "L5", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
 
-      // Direita: Linhas 1 a 8
-      "RD-1": { id: "RD-1", label: "LINHA 1", project: "SE Gaspar 138kV", stage: "PRE-TAF", status: "NO PRAZO", panels: ["PN-01"] },
-      "RD-2": { id: "RD-2", label: "LINHA 2", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
-      "RD-3": { id: "RD-3", label: "LINHA 3", project: "SE Joinville Norte", stage: "TAF", status: "ATRASADO", panels: ["QCP-87L1"] },
-      "RD-4": { id: "RD-4", label: "LINHA 4", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
-      "RD-5": { id: "RD-5", label: "LINHA 5", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
-      "RD-6": { id: "RD-6", label: "LINHA 6", project: "UFV Sol do Sertão", stage: "TAF", status: "NO PRAZO", panels: ["SKID-01"] },
-      "RD-7": { id: "RD-7", label: "LINHA 7", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
-      "RD-8": { id: "RD-8", label: "LINHA 8", project: "", stage: "PRE-TAF", status: "NO PRAZO", panels: [] },
+      // Direita: L1 a L8
+      "RD-1": { id: "RD-1", label: "L1", project: "SE Gaspar 138kV", responsible: "Eduardo", stage: "PRE-TAF", attention: false, panels: ["PN-01"] },
+      "RD-2": { id: "RD-2", label: "L2", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
+      "RD-3": { id: "RD-3", label: "L3", project: "SE Joinville Norte", responsible: "Lucas", stage: "TAF", attention: true, panels: ["QCP-87L1"] },
+      "RD-4": { id: "RD-4", label: "L4", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
+      "RD-5": { id: "RD-5", label: "L5", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
+      "RD-6": { id: "RD-6", label: "L6", project: "UFV Sol do Sertão", responsible: "Henrique", stage: "TAF", attention: false, panels: ["SKID-01"] },
+      "RD-7": { id: "RD-7", label: "L7", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
+      "RD-8": { id: "RD-8", label: "L8", project: "", responsible: "", stage: "PRE-TAF", attention: false, panels: [] },
 
       // Canto Inferior Esquerdo: 6 Plataformas de Rotina
-      "ROT-1": { id: "ROT-1", label: "PLATAFORMA 1", project: "Lote CCM Industrial", stage: "ROTINA", status: "NO PRAZO", panels: ["CCM-01A"] },
-      "ROT-2": { id: "ROT-2", label: "PLATAFORMA 2", project: "SE Tubarão", stage: "ROTINA", status: "NO PRAZO", panels: ["QDCA-01"] },
-      "ROT-3": { id: "ROT-3", label: "PLATAFORMA 3", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
-      "ROT-4": { id: "ROT-4", label: "PLATAFORMA 4", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
-      "ROT-5": { id: "ROT-5", label: "PLATAFORMA 5", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
-      "ROT-6": { id: "ROT-6", label: "PLATAFORMA 6", project: "", stage: "ROTINA", status: "NO PRAZO", panels: [] },
+      "ROT-1": { id: "ROT-1", label: "PLATAFORMA 1", project: "Lote CCM Industrial", responsible: "André", stage: "ROTINA", attention: false, panels: ["CCM-01A", "CCM-01B", "CCM-02A"] },
+      "ROT-2": { id: "ROT-2", label: "PLATAFORMA 2", project: "SE Tubarão", responsible: "Bruno", stage: "ROTINA", attention: false, panels: ["QDCA-01"] },
+      "ROT-3": { id: "ROT-3", label: "PLATAFORMA 3", project: "", responsible: "", stage: "ROTINA", attention: false, panels: [] },
+      "ROT-4": { id: "ROT-4", label: "PLATAFORMA 4", project: "", responsible: "", stage: "ROTINA", attention: false, panels: [] },
+      "ROT-5": { id: "ROT-5", label: "PLATAFORMA 5", project: "", responsible: "", stage: "ROTINA", attention: false, panels: [] },
+      "ROT-6": { id: "ROT-6", label: "PLATAFORMA 6", project: "", responsible: "", stage: "ROTINA", attention: false, panels: [] },
     };
 
-    // Garante que mesmo se o Firebase apagar arrays vazios, a estrutura nunca quebre
+    // Converte automaticamente "LINHA X" vindo do Firebase antigo para "LX" e garante arrays seguros
+    const formatShortLabel = (labelStr, fallback) => {
+      const raw = (labelStr || fallback || "").trim();
+      return raw.replace(/^LINHA\s+(\d+)$/i, "L$1");
+    };
+
     const normalizeSlots = (raw) => {
       const merged = { ...INITIAL_DATA };
       if (raw && typeof raw === "object") {
         Object.keys(INITIAL_DATA).forEach((key) => {
           if (raw[key]) {
+            const item = raw[key];
+            const hasAttention =
+              typeof item.attention === "boolean"
+                ? item.attention
+                : item.status === "ATRASADO" || item.status === "ATENCAO";
             merged[key] = {
               ...INITIAL_DATA[key],
-              ...raw[key],
-              panels: Array.isArray(raw[key].panels) ? raw[key].panels : [],
+              ...item,
+              label: formatShortLabel(item.label, INITIAL_DATA[key].label),
+              responsible: typeof item.responsible === "string" ? item.responsible : (INITIAL_DATA[key].responsible || ""),
+              attention: Boolean(hasAttention),
+              panels: Array.isArray(item.panels) ? item.panels : [],
             };
           }
         });
@@ -110,8 +120,10 @@ const firebaseConfig = {
     };
 
     function App() {
+      // Inicia autenticado na pré-visualização, permitindo bloquear/testar login pelo botão no cabeçalho
       const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return sessionStorage.getItem("weg_lab_auth") === "true";
+        const saved = sessionStorage.getItem("weg_lab_auth");
+        return saved === null ? true : saved === "true";
       });
       const [loginUser, setLoginUser] = useState("");
       const [loginPass, setLoginPass] = useState("");
@@ -121,8 +133,9 @@ const firebaseConfig = {
       const [clock, setClock] = useState(new Date());
       const [editingId, setEditingId] = useState(null);
       const [formProject, setFormProject] = useState("");
+      const [formResponsible, setFormResponsible] = useState("");
       const [formStage, setFormStage] = useState("PRE-TAF");
-      const [formStatus, setFormStatus] = useState("NO PRAZO");
+      const [formAttention, setFormAttention] = useState(false);
       const [formPanels, setFormPanels] = useState("");
       const [isConnected, setIsConnected] = useState(false);
 
@@ -174,12 +187,20 @@ const firebaseConfig = {
         }
       };
 
+      const handleLogout = () => {
+        sessionStorage.setItem("weg_lab_auth", "false");
+        setIsAuthenticated(false);
+        setLoginUser("");
+        setLoginPass("");
+      };
+
       const openModal = (id) => {
         const item = slots[id] || INITIAL_DATA[id];
         setEditingId(id);
         setFormProject(item.project || "");
+        setFormResponsible(item.responsible || "");
         setFormStage(item.stage || (id.startsWith("ROT") ? "ROTINA" : "PRE-TAF"));
-        setFormStatus(item.status || "NO PRAZO");
+        setFormAttention(Boolean(item.attention));
         setFormPanels(Array.isArray(item.panels) ? item.panels.join(", ") : "");
       };
 
@@ -189,13 +210,17 @@ const firebaseConfig = {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
+        const baseItem = slots[editingId] || INITIAL_DATA[editingId];
         const updated = {
           ...slots,
           [editingId]: {
-            ...(slots[editingId] || INITIAL_DATA[editingId]),
+            ...baseItem,
+            label: formatShortLabel(baseItem.label, INITIAL_DATA[editingId].label),
             project: formProject.trim(),
+            responsible: formResponsible.trim(),
             stage: formStage,
-            status: formStatus,
+            attention: Boolean(formAttention),
+            status: formAttention ? "ATENCAO" : "NORMAL",
             panels: panelsList,
           },
         };
@@ -204,11 +229,16 @@ const firebaseConfig = {
       };
 
       const clearSlot = () => {
+        const baseItem = slots[editingId] || INITIAL_DATA[editingId];
         const updated = {
           ...slots,
           [editingId]: {
-            ...(slots[editingId] || INITIAL_DATA[editingId]),
+            ...baseItem,
+            label: formatShortLabel(baseItem.label, INITIAL_DATA[editingId].label),
             project: "",
+            responsible: "",
+            attention: false,
+            status: "NORMAL",
             panels: [],
           },
         };
@@ -227,15 +257,31 @@ const firebaseConfig = {
         updateSlotsInCloud(updated);
       };
 
+      const toggleAttention = (e, id) => {
+        e.stopPropagation();
+        const currentItem = slots[id] || INITIAL_DATA[id];
+        const nextAttention = !currentItem.attention;
+        const updated = {
+          ...slots,
+          [id]: {
+            ...currentItem,
+            attention: nextAttention,
+            status: nextAttention ? "ATENCAO" : "NORMAL",
+          },
+        };
+        updateSlotsInCloud(updated);
+      };
+
       const totalOccupied = Object.values(slots).filter((s) => s && s.project).length;
       const totalAvailable = Object.keys(INITIAL_DATA).length - totalOccupied;
 
       const PlatformLine = ({ id }) => {
         const data = slots[id] || INITIAL_DATA[id];
+        const shortLabel = formatShortLabel(data.label, INITIAL_DATA[id].label);
         const panels = Array.isArray(data.panels) ? data.panels : [];
         const isOccupied = Boolean(data.project);
         const isTAF = data.stage === "TAF";
-        const isDelayed = data.status === "ATRASADO";
+        const hasAttention = Boolean(data.attention);
 
         return (
           <div className="relative flex items-center h-full w-full">
@@ -250,10 +296,21 @@ const firebaseConfig = {
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-black/50 text-slate-300 shrink-0">
-                    {data.label}
-                  </span>
-                  <div className="truncate">
+                  {/* Coluna da Esquerda: L1..L8 deslocado para cima + Responsável logo abaixo */}
+                  <div className="flex flex-col items-center justify-center shrink-0 min-w-[54px] -mt-0.5">
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded bg-black/60 text-slate-100 border border-white/10 leading-none">
+                      {shortLabel}
+                    </span>
+                    <span
+                      className="text-[9px] font-bold text-sky-300 mt-1 max-w-[68px] truncate leading-none"
+                      title={data.responsible ? `Responsável: ${data.responsible}` : "Sem responsável definido"}
+                    >
+                      {data.responsible || "—"}
+                    </span>
+                  </div>
+
+                  {/* Coluna Central: Nome do Projeto + Códigos dos Painéis */}
+                  <div className="truncate border-l border-white/10 pl-2.5">
                     <div className="text-xs font-black text-white truncate">{data.project}</div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {panels.map((p, idx) => (
@@ -268,15 +325,20 @@ const firebaseConfig = {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-0.5 shrink-0">
-                  <span
-                    className={`text-[8px] font-black px-1.5 py-0.2 rounded tracking-wider uppercase ${
-                      isDelayed ? "bg-rose-600 text-white animate-pulse" : "bg-sky-600/80 text-white"
-                    }`}
-                  >
-                    {data.status || "NO PRAZO"}
-                  </span>
+                {/* Coluna da Direita: Ícone ⚠️ (somente quando Atenção ativo) acima da etiqueta EM TAF / PRÉ-TAF */}
+                <div className="flex flex-col items-end justify-center gap-0.5 shrink-0">
+                  {hasAttention && (
+                    <button
+                      type="button"
+                      onClick={(e) => toggleAttention(e, id)}
+                      title="Flag Atenção ativa (Clique para remover)"
+                      className="text-sm leading-none px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 animate-pulse transition hover:scale-110"
+                    >
+                      ⚠️
+                    </button>
+                  )}
                   <button
+                    type="button"
                     onClick={(e) => toggleStage(e, id)}
                     className={`px-2 py-0.2 rounded text-[9px] font-black tracking-wider uppercase border transition ${
                       isTAF
@@ -293,7 +355,7 @@ const firebaseConfig = {
                 onClick={() => openModal(id)}
                 className="relative z-10 mx-auto px-3 py-0.5 rounded-full bg-slate-900/95 border border-dashed border-slate-600 hover:border-sky-400 text-slate-400 hover:text-sky-300 text-[10px] font-bold flex items-center gap-1.5 transition"
               >
-                <span>{data.label}: DISPONÍVEL</span>
+                <span>{shortLabel}: DISPONÍVEL</span>
                 <span className="text-sky-400 font-black">+ Adicionar</span>
               </button>
             )}
@@ -387,6 +449,9 @@ const firebaseConfig = {
 
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-3 text-xs font-bold">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700 text-amber-300">
+                  <span>⚠️</span> Atenção
+                </span>
                 <span className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-950 border border-emerald-500 text-emerald-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" /> EM TAF
                 </span>
@@ -398,22 +463,32 @@ const firebaseConfig = {
                 </span>
               </div>
 
-              <div className="text-right pl-4 border-l border-slate-800">
-                <div className="text-xl font-mono font-black text-white leading-none">
-                  {clock.toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
+                <div className="text-right">
+                  <div className="text-xl font-mono font-black text-white leading-none">
+                    {clock.toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </div>
+                  <div className="text-[10px] text-slate-400 uppercase mt-0.5">
+                    {clock.toLocaleDateString("pt-BR", {
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-400 uppercase mt-0.5">
-                  {clock.toLocaleDateString("pt-BR", {
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title="Bloquear tela / Voltar ao Login"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold uppercase tracking-wider border border-slate-700 transition"
+                >
+                  Sair
+                </button>
               </div>
             </div>
           </header>
@@ -501,36 +576,59 @@ const firebaseConfig = {
                       const r = slots[rotId] || INITIAL_DATA[rotId];
                       const rPanels = Array.isArray(r.panels) ? r.panels : [];
                       const occ = Boolean(r.project);
+                      const hasAttention = Boolean(r.attention);
                       return (
                         <div
                           key={rotId}
                           onClick={() => openModal(rotId)}
-                          className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between h-full min-h-0 overflow-hidden ${
+                          className={`p-1.5 rounded-lg border-2 cursor-pointer transition flex flex-col justify-start gap-1 h-full min-h-0 overflow-hidden ${
                             occ
                               ? "bg-sky-950/90 border-sky-400 hover:bg-sky-900"
                               : "bg-slate-900/70 border-dashed border-slate-700 hover:border-sky-400"
                           }`}
                         >
-                          <div className="flex items-center justify-between shrink-0">
-                            <span className="text-[8px] font-extrabold text-slate-300 uppercase truncate">
-                              {r.label}
-                            </span>
-                            {occ && (
-                              <span className="text-[7px] font-black px-1 rounded bg-sky-400 text-slate-950 shrink-0">
-                                ROT
+                          {/* Topo da Plataforma de Rotina: Identificação + Responsável + Flag ⚠️ */}
+                          <div className="flex items-start justify-between shrink-0 gap-1 border-b border-white/10 pb-0.5">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <span className="text-[8px] font-extrabold text-slate-200 uppercase truncate leading-none">
+                                {r.label}
                               </span>
+                              {occ && r.responsible && (
+                                <span className="text-[8px] font-bold text-sky-300 truncate leading-none">
+                                  • {r.responsible}
+                                </span>
+                              )}
+                            </div>
+                            {occ && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                {hasAttention && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => toggleAttention(e, rotId)}
+                                    title="Flag Atenção ativa"
+                                    className="text-[10px] leading-none animate-pulse"
+                                  >
+                                    ⚠️
+                                  </button>
+                                )}
+                                <span className="text-[7px] font-black px-1 rounded bg-sky-400 text-slate-950">
+                                  ROT
+                                </span>
+                              </div>
                             )}
                           </div>
+
+                          {/* Conteúdo preenchido de cima para baixo para caber mais códigos de painéis */}
                           {occ ? (
-                            <div className="min-h-0 overflow-hidden">
-                              <div className="text-[10px] font-black text-white truncate">
+                            <div className="flex flex-col justify-start min-h-0 flex-1 overflow-hidden">
+                              <div className="text-[10px] font-black text-white truncate leading-tight shrink-0">
                                 {r.project}
                               </div>
-                              <div className="flex flex-wrap gap-0.5 mt-0.5">
+                              <div className="flex flex-wrap content-start gap-0.5 mt-1 overflow-y-auto pr-0.5">
                                 {rPanels.map((p, idx) => (
                                   <span
                                     key={idx}
-                                    className="text-[7px] font-mono font-bold px-1 rounded bg-black/50 text-sky-200"
+                                    className="text-[7px] font-mono font-bold px-1 py-0.2 rounded bg-black/60 text-sky-200 border border-sky-400/20 leading-tight"
                                   >
                                     {p}
                                   </span>
@@ -574,7 +672,7 @@ const firebaseConfig = {
               >
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <h2 className="text-lg font-black text-white">
-                    Editar {(slots[editingId] || INITIAL_DATA[editingId]).label}
+                    Editar {formatShortLabel((slots[editingId] || INITIAL_DATA[editingId]).label, INITIAL_DATA[editingId].label)}
                   </h2>
                   <button
                     type="button"
@@ -596,6 +694,19 @@ const firebaseConfig = {
                     placeholder="Ex: SE 230kV Blumenau"
                     className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white text-sm focus:border-sky-400 outline-none"
                     autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
+                    Responsável pela Linha
+                  </label>
+                  <input
+                    type="text"
+                    value={formResponsible}
+                    onChange={(e) => setFormResponsible(e.target.value)}
+                    placeholder="Ex: Carlos / Rafael"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white text-sm focus:border-sky-400 outline-none"
                   />
                 </div>
 
@@ -633,32 +744,31 @@ const firebaseConfig = {
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
-                    Status do Prazo
+                    Alerta / Flag da Linha
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormStatus("NO PRAZO")}
-                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${
-                        formStatus === "NO PRAZO"
-                          ? "bg-sky-500 text-slate-950 border-sky-300"
-                          : "bg-slate-950 text-slate-400 border-slate-800"
+                  <button
+                    type="button"
+                    onClick={() => setFormAttention(!formAttention)}
+                    className={`w-full py-2.5 px-4 rounded-lg font-black text-xs border-2 transition flex items-center justify-between ${
+                      formAttention
+                        ? "bg-amber-500/20 text-amber-300 border-amber-400 shadow-lg"
+                        : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-base leading-none">⚠️</span>
+                      <span>FLAG ATENÇÃO</span>
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] uppercase ${
+                        formAttention
+                          ? "bg-amber-400 text-slate-950 font-black"
+                          : "bg-slate-800 text-slate-400"
                       }`}
                     >
-                      NO PRAZO
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormStatus("ATRASADO")}
-                      className={`py-2 rounded-lg font-black text-xs border-2 transition ${
-                        formStatus === "ATRASADO"
-                          ? "bg-rose-600 text-white border-rose-400"
-                          : "bg-slate-950 text-slate-400 border-slate-800"
-                      }`}
-                    >
-                      ATRASADO
-                    </button>
-                  </div>
+                      {formAttention ? "ATIVADA" : "DESATIVADA"}
+                    </span>
+                  </button>
                 </div>
 
                 <div>
